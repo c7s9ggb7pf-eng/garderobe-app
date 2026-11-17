@@ -713,6 +713,31 @@ html[data-text="xl"] .lay{aspect-ratio:10/17.2;max-height:none}
 html[data-text="xl"] .lay-stage{top:11%}
 html[data-text="xl"] .lay-kicker{letter-spacing:.06em;font-size:.6rem}
 
+
+/* ---- 3.1: Tauschen, Einlagern, Ähnliches, Kauf-Check ---- */
+.piece-swap{position:absolute;top:-.3rem;left:-.3rem;display:grid;place-items:center;width:2rem;height:2rem;border-radius:50%;
+  background:var(--surface);box-shadow:inset 0 0 0 1px var(--line-2),var(--shadow-1);color:var(--ink-3);transition:transform .3s var(--spring)}
+.piece-swap:active{transform:scale(.85) rotate(-90deg)}
+.piece-swap .i{width:1rem;height:1rem}
+.item.stored .item-img img{opacity:.5;filter:grayscale(.7)}
+.dup{display:flex;align-items:center;gap:.65rem;margin-top:.85rem;padding:.55rem .8rem .55rem .55rem;border-radius:var(--r-md);background:var(--surface-2);font-size:.86rem;color:var(--ink-2);line-height:1.35}
+.dup img{width:2.5rem;height:2.5rem;border-radius:.7rem;object-fit:contain;flex:none;padding:.15rem}
+.dup img+img{margin-left:-1.3rem;box-shadow:0 0 0 2px var(--surface-2)}
+.dup b{color:var(--ink);font-weight:600}
+.buy-lead{color:var(--ink-2);margin:0 0 1rem;line-height:1.5}
+.buy-verdict{margin:1.4rem 0 .9rem;padding:1.15rem 1.2rem 1.2rem;border-radius:var(--r-lg);background:var(--accent-soft);color:var(--ink)}
+.buy-verdict h3{font-family:Fraunces,Georgia,serif;font-weight:380;font-size:2rem;line-height:1.05;letter-spacing:-.02em;margin:.35rem 0 .45rem;font-variation-settings:"SOFT" 60}
+.buy-verdict p{margin:0;color:var(--ink-2);line-height:1.45}
+.buy-verdict.top h3{font-style:italic}
+.buy-verdict.mid{background:color-mix(in srgb,#E3B23C 18%,var(--surface))}
+.buy-verdict.low{background:var(--danger-soft)}
+.buy-looks{display:grid;grid-template-columns:1fr 1fr;gap:.7rem}
+.buy-look .lay-mini{display:block;width:100%;aspect-ratio:1/1.1;border-radius:var(--r-md)}
+.buy-sim{display:flex;gap:.7rem;overflow-x:auto;padding-bottom:.3rem;scrollbar-width:none}
+.buy-simi{width:5.2rem;flex:none}
+.buy-simi span{display:block;aspect-ratio:1/1.1;border-radius:var(--r-md);overflow:hidden}
+.buy-simi img{width:100%;height:100%;object-fit:contain;padding:.35rem}
+.buy-simi small{display:block;margin-top:.35rem;font-size:.75rem;color:var(--ink-2);line-height:1.25}
 /*@CSS-MORE*/
 </style>
 </head>
@@ -770,6 +795,9 @@ html[data-text="xl"] .lay-kicker{letter-spacing:.06em;font-size:.6rem}
   <symbol id="i-shoe" viewBox="0 0 24 24"><path d="M3 17.5v-8l3 .6 2.5 2.4c1.2 1.1 2.3 1.6 4 1.9l5.6.9a2.5 2.5 0 0 1 2.1 2.5v.7H3z"/><path d="M3 20h18"/></symbol>
   <symbol id="i-scissors" viewBox="0 0 24 24"><circle cx="6" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><path d="M20 4L8.12 15.88M14.47 14.48L20 20M8.12 8.12L12 12"/></symbol>
   <symbol id="i-undo" viewBox="0 0 24 24"><path d="M8.5 13.5L4 9l4.5-4.5"/><path d="M4 9h10.5a5.5 5.5 0 0 1 0 11H11"/></symbol>
+  <symbol id="i-box" viewBox="0 0 24 24"><path d="M4.5 8.5h15V19a1 1 0 0 1-1 1h-13a1 1 0 0 1-1-1z"/><path d="M3.5 4.5h17v4h-17z"/><path d="M10 12.5h4"/></symbol>
+  <symbol id="i-swap" viewBox="0 0 24 24"><path d="M5 9h12.5"/><path d="M14.5 5.5L18 9l-3.5 3.5"/><path d="M19 15H6.5"/><path d="M9.5 11.5L6 15l3.5 3.5"/></symbol>
+  <symbol id="i-scan" viewBox="0 0 24 24"><path d="M4 8V5.5A1.5 1.5 0 0 1 5.5 4H8"/><path d="M16 4h2.5A1.5 1.5 0 0 1 20 5.5V8"/><path d="M20 16v2.5a1.5 1.5 0 0 1-1.5 1.5H16"/><path d="M8 20H5.5A1.5 1.5 0 0 1 4 18.5V16"/><path d="M9 12.5l2 2 4-4.5"/></symbol>
   <symbol id="i-bag" viewBox="0 0 24 24"><path d="M5 8.5h14l-1 11.5H6z"/><path d="M9 8.5V7a3 3 0 0 1 6 0v1.5"/></symbol>
 </defs></svg>
 
@@ -876,7 +904,7 @@ html[data-text="xl"] .lay-kicker{letter-spacing:.06em;font-size:.6rem}
     <div class="field"><label for="nameInput">Name <span class="faint">(optional)</span></label>
       <input class="input" id="nameInput" placeholder="z. B. Blaue Jeans" maxlength="60" autocomplete="off"></div>
     <div class="field"><span class="field-label">Kategorie</span><div class="opt-grid" id="catOpts"></div></div>
-    <div class="field"><span class="field-label">Farbe</span><div class="swatches" id="colorOpts"></div><div class="color-line" id="colorLine"></div></div>
+    <div class="field"><span class="field-label">Farbe</span><div class="swatches" id="colorOpts"></div><div class="color-line" id="colorLine"></div><div id="dupHint"></div></div>
     <div class="field"><span class="field-label">Wie warm ist das Teil?</span><div class="opt-grid four" id="warmOpts"></div></div>
     <div class="field"><span class="field-label">Passt zu</span><div class="chips" id="occOpts"></div><p class="field-hint">Mehrere Anlässe möglich</p></div>
     <div class="field"><label for="priceInput">Preis <span class="faint">(optional)</span></label>
@@ -884,6 +912,15 @@ html[data-text="xl"] .lay-kicker{letter-spacing:.06em;font-size:.6rem}
       <p class="field-hint">Damit siehst du später die Kosten pro Tragen.</p></div>
   </div>
   <div class="sheet-foot"><button class="btn btn-secondary" data-close>Abbrechen</button><button class="btn btn-primary" id="saveItem">Speichern</button></div>
+</div></div>
+
+<!-- ======================= Sheet: Kauf-Check ======================= -->
+<div class="sheet-bg" id="sheet-buy"><div class="sheet tall" role="dialog" aria-modal="true" aria-labelledby="buyTitle">
+  <div class="sheet-grab"></div>
+  <div class="sheet-head"><h2 id="buyTitle">Kauf-Check</h2><button class="icon-btn sm" data-close aria-label="Schließen"><svg class="i sm"><use href="#i-x"/></svg></button></div>
+  <input type="file" id="buyInput" accept="image/*" hidden>
+  <div class="sheet-body" id="buyBody"></div>
+  <div class="sheet-foot" id="buyFoot"></div>
 </div></div>
 
 <!-- ======================= Sheet: Filter ======================= -->
@@ -989,7 +1026,7 @@ html[data-text="xl"] .lay-kicker{letter-spacing:.06em;font-size:.6rem}
 
 <script>
 'use strict';
-const APP_VERSION='3.0';
+const APP_VERSION='3.1';
 
 /* ======================= Konstanten ======================= */
 const CATS=[
@@ -1256,7 +1293,7 @@ function buildOutfit({occasion='Alles',target=2,outer=false,rng=Math.random,lock
   const lm=laundryMode();
   const L={};
   locks.map(id=>ITEMS.find(i=>i.id===id)).filter(Boolean).forEach(it=>L[slotOf(it)]=it);
-  const clean=ITEMS.filter(i=>!(lm&&i.dirty));
+  const clean=ITEMS.filter(i=>!i.stored&&!(lm&&i.dirty));
   let pool=clean;
   if(occasion&&occasion!=='Alles')pool=pool.filter(i=>(i.occ||[]).includes(occasion));
   // Schuhe, Jacken & Accessoires: passt keins zum Anlass, nimm das Passendste aus dem ganzen Schrank
@@ -1307,7 +1344,7 @@ function buildOutfit({occasion='Alles',target=2,outer=false,rng=Math.random,lock
 // Was fehlt für einen Look? (für hilfreiche Hinweise)
 function missingFor(occasion){
   const lm=laundryMode();
-  let pool=ITEMS.filter(i=>!(lm&&i.dirty));
+  let pool=ITEMS.filter(i=>!i.stored&&!(lm&&i.dirty));
   if(occasion&&occasion!=='Alles')pool=pool.filter(i=>(i.occ||[]).includes(occasion));
   const has=s=>pool.some(i=>slotOf(i)===s);
   if(has('dress')||(has('top')&&has('bottom')))return null;
@@ -1363,6 +1400,23 @@ function lookWith(id){
   if(!ids){const it=ITEMS.find(i=>i.id===id);toast(`Für ${it?itemName(it):'dieses Teil'} fehlen passende Teile`);LOOK.locks=[];return false;}
   LOOK.ids=ids;LOOK.auto=false;persistLook();go('heute');return true;
 }
+// Nur dieses eine Teil tauschen: ein Teil derselben Art, das am besten zum Rest des Looks passt
+const SWAP_SEEN={};
+function swapPiece(id){
+  const cur=ITEMS.find(i=>i.id===id);if(!cur||!LOOK.ids)return;
+  const s=slotOf(cur),lm=laundryMode(),tw=targetWarmth(),rest=itemsOf(LOOK.ids).filter(i=>i.id!==id&&slotOf(i)!=='acc');
+  let c=ITEMS.filter(i=>i.id!==id&&slotOf(i)===s&&!i.stored&&!(lm&&i.dirty)&&!LOOK.ids.includes(i.id));
+  const occ=c.filter(i=>LOOK.occasion==='Alles'||(i.occ||[]).includes(LOOK.occasion));if(occ.length)c=occ;
+  if(!c.length){toast(`Für ${itemName(cur)} gibt es noch keine Alternative im Schrank`,3000);return;}
+  const sc=i=>{const h=s==='acc'||!rest.length?.85:rest.reduce((a,o)=>a+harmony(i.color,o.color),0)/rest.length;
+    return(h*.6+warmFit(i,tw)*.4)*(.7+.3*recencyFactor(daysSince(i.id)));};
+  const list=c.map(i=>({i,v:sc(i)})).sort((a,b)=>b.v-a.v),good=list.filter(x=>x.v>=list[0].v*.8);
+  const seen=SWAP_SEEN[s]||(SWAP_SEEN[s]=[]);let pool=good.filter(x=>!seen.includes(x.i.id));
+  if(!pool.length){seen.length=0;pool=good.filter(x=>x.i.id!==id);if(!pool.length)pool=good;}
+  const next=pool[0].i;seen.push(next.id,id);
+  LOOK.ids=LOOK.ids.map(x=>x===id?next.id:x);LOOK.locks=LOOK.locks.filter(x=>x!==id);LOOK.auto=false;persistLook();swapLook();
+  toast(`${itemName(next)} statt ${itemName(cur)}`);
+}
 function toggleLock(id){
   const i=LOOK.locks.indexOf(id);
   if(i>=0)LOOK.locks.splice(i,1);else LOOK.locks.push(id);
@@ -1407,7 +1461,7 @@ function renderMeta(){
 // Farbe des Tages: Farbfamilien, die im Schrank vorkommen
 function colorFamilies(){
   const m={};
-  ITEMS.filter(i=>slotOf(i)!=='acc'&&!(laundryMode()&&i.dirty)).forEach(i=>{const n=colorName(i.color);(m[n]=m[n]||{n:0,hex:i.color?.hex||'#999999'}).n++;});
+  ITEMS.filter(i=>slotOf(i)!=='acc'&&!i.stored&&!(laundryMode()&&i.dirty)).forEach(i=>{const n=colorName(i.color);(m[n]=m[n]||{n:0,hex:i.color?.hex||'#999999'}).n++;});
   return Object.entries(m).sort((a,b)=>b[1].n-a[1].n).map(([name,v])=>({name,hex:v.hex}));
 }
 function renderColorBar(){
@@ -1517,7 +1571,7 @@ function renderLook(animate=false){
     applyTint(null);
     const miss=missingFor(LOOK.occasion),occTxt=LOOK.occasion!=='Alles'?` für „${LOOK.occasion}"`:'';
     // Was schon da ist, liegt bereits im Bild – der Rest ist als Platzhalter angedeutet
-    const lm=laundryMode(),pool=ITEMS.filter(i=>!(lm&&i.dirty)&&(LOOK.occasion==='Alles'||(i.occ||[]).includes(LOOK.occasion)));
+    const lm=laundryMode(),pool=ITEMS.filter(i=>!i.stored&&!(lm&&i.dirty)&&(LOOK.occasion==='Alles'||(i.occ||[]).includes(LOOK.occasion)));
     const have=itemsOf(['outer','dress','top','bottom','shoes'].map(s=>pool.find(i=>slotOf(i)===s)?.id).filter(Boolean));
     const slots=['top','bottom','shoes'].filter(s=>!have.some(i=>slotOf(i)===s)&&!(s!=='shoes'&&have.some(i=>slotOf(i)==='dress')));
     el.innerHTML=`<div class="lay ghost" style="${have.length?layColors(have):greenPaper}">
@@ -1547,12 +1601,14 @@ function renderLook(animate=false){
   <div class="chip-scroll color-bar" id="colorBar" aria-label="Farbe des Tages"></div>
   <div class="pieces">${items.map(it=>{const lk=LOOK.locks.includes(it.id);return`<div class="piece ${lk?'locked':''}">
       <button class="piece-img" data-open="${it.id}" aria-label="${esc(itemName(it))} ansehen" style="background:${tint(it.color?.hex,.3)}"><img src="${thumb(it)}" alt=""></button>
+      <button class="piece-swap" data-swap="${it.id}" aria-label="${esc(itemName(it))} tauschen">${ic('i-swap')}</button>
       <button class="piece-lock" data-lock="${it.id}" aria-pressed="${lk}" aria-label="${lk?'Freigeben':'Behalten'}: ${esc(itemName(it))}">${ic(lk?'i-lock':'i-unlock')}</button>
       <div class="piece-name">${esc(itemName(it))}</div></div>`;}).join('')}</div>
   ${showHint?`<p class="look-hint">Tipp: Tippe auf das Schloss, um ein Teil beim Neu mischen zu behalten.</p>`:''}`;
   renderColorBar();
   el.querySelectorAll('[data-open]').forEach(b=>b.onclick=()=>openDetail(b.dataset.open));
   el.querySelectorAll('[data-lock]').forEach(b=>b.onclick=()=>toggleLock(b.dataset.lock));
+  el.querySelectorAll('[data-swap]').forEach(b=>b.onclick=()=>swapPiece(b.dataset.swap));
   $('#shuffleBtn').onclick=reshuffle;
   $('#favBtn').onclick=toggleFav;
   $('#shareBtn').onclick=shareLook;
@@ -1662,15 +1718,17 @@ function renderClosetGrid(){
       <p>Probier einen anderen Suchbegriff oder setze die Filter zurück.</p><button class="btn btn-secondary" id="clearFilters">Filter zurücksetzen</button></div>`;
     $('#clearFilters').onclick=resetFilters;return;
   }
-  const tile=it=>{const n=wearCount(it.id),dirty=lm&&it.dirty;return`<button class="item ${dirty?'dirty':''}" data-id="${it.id}">
-    <div class="item-img" style="background:${tint(it.color?.hex,.28)}"><img src="${thumb(it)}" alt="" loading="lazy" decoding="async">${dirty?`<span class="item-badge">${ic('i-wash')}Wäsche</span>`:''}</div>
+  const tile=it=>{const n=wearCount(it.id),dirty=lm&&it.dirty;return`<button class="item ${dirty?'dirty':''} ${it.stored?'stored':''}" data-id="${it.id}">
+    <div class="item-img" style="background:${tint(it.color?.hex,.28)}"><img src="${thumb(it)}" alt="" loading="lazy" decoding="async">${dirty?`<span class="item-badge">${ic('i-wash')}Wäsche</span>`:it.stored?`<span class="item-badge">${ic('i-box')}Eingelagert</span>`:''}</div>
     <div class="item-name">${esc(itemName(it))}</div>
     <div class="item-sub">${n?`${n}× getragen`:'Noch nie getragen'}</div></button>`;};
   const shelves=CF.cat==='alle'&&!CF.q.trim()&&!fc&&ITEMS.length>=8;
   grid.className=shelves?'shelves':'grid';
-  grid.innerHTML=shelves?CATS.filter(c=>list.some(i=>i.cat===c.id)).map(c=>{const part=list.filter(i=>i.cat===c.id);
+  const act=shelves?list.filter(i=>!i.stored):list,stored=shelves?list.filter(i=>i.stored):[];
+  grid.innerHTML=shelves?CATS.filter(c=>act.some(i=>i.cat===c.id)).map(c=>{const part=act.filter(i=>i.cat===c.id);
       return`<div class="shelf-head"><h2>${c.plural}<small>${part.length}</small></h2>${part.length>2?`<button class="link-btn" data-cat="${c.id}" aria-label="Alle ${c.plural} zeigen">Alle${ic('i-chev-r','sm')}</button>`:''}</div>
-        <div class="shelf">${part.map(tile).join('')}</div>`;}).join(''):list.map(tile).join('');
+        <div class="shelf">${part.map(tile).join('')}</div>`;}).join('')+(stored.length?`<div class="shelf-head"><h2>Eingelagert<small>${stored.length}</small></h2></div>
+        <div class="shelf">${stored.map(tile).join('')}</div>`:''):list.map(tile).join('');
   grid.querySelectorAll('.item').forEach(b=>b.onclick=()=>openDetail(b.dataset.id));
   grid.querySelectorAll('.shelf-head [data-cat]').forEach(b=>b.onclick=()=>{CF.cat=b.dataset.cat;renderCloset();window.scrollTo(0,0);});
 }
@@ -1716,7 +1774,7 @@ function renderDetail(){
       <span class="meta">${ic(c.icon)}${c.label}</span>
       <span class="meta"><span class="dot" style="background:${it.color?.hex||'#999'}"></span>${colorName(it.color)}</span>
       <span class="meta">${ic('i-thermo')}${WARMTH_LABEL[it.warmth??2]}</span>
-      ${lm&&it.dirty?`<span class="meta">${ic('i-wash')}In der Wäsche</span>`:''}
+      ${lm&&it.dirty?`<span class="meta">${ic('i-wash')}In der Wäsche</span>`:''}${it.stored?`<span class="meta">${ic('i-box')}Eingelagert</span>`:''}
     </div>
     <div class="stats3">
       <div class="stat"><b>${n}×</b><span>getragen</span></div>
@@ -1727,6 +1785,7 @@ function renderDetail(){
     ${sellCardHTML(it)}
     <button class="btn btn-primary btn-block" id="dLook">${ic('i-today')}Outfit damit erstellen</button>
     <div class="list" style="margin-top:1rem">
+      <button class="list-row" id="dStore"><span class="ico-tile">${ic('i-box')}</span><span class="lr-main"><span class="lr-title">${it.stored?'Wieder hervorholen':'Einlagern'}</span><span class="lr-sub">${it.stored?'Kommt wieder in die Vorschläge':'Gerade nicht die Saison – wird nicht vorgeschlagen'}</span></span></button>
       ${lm?`<button class="list-row" id="dWash"><span class="ico-tile">${ic('i-wash')}</span><span class="lr-main"><span class="lr-title">${it.dirty?'Ist wieder sauber':'In die Wäsche legen'}</span>
         <span class="lr-sub">${it.dirty?'Kommt wieder in die Vorschläge':'Wird nicht mehr vorgeschlagen'}</span></span></button>`:''}
       ${it.cut&&it.photoOrig?`<button class="list-row" id="dFix"><span class="ico-tile">${ic('i-scissors')}</span><span class="lr-main"><span class="lr-title">Freistellung nachbessern</span><span class="lr-sub">Reste entfernen oder Fehlendes zurückholen</span></span>${ic('i-chev-r','chev')}</button>
@@ -1738,6 +1797,10 @@ function renderDetail(){
   $('#dLook').onclick=()=>{if(lookWith(it.id)){closeOverlay('page-detail');toast('Look rund um dieses Teil');}};
   wireSellCard(it,renderDetail);
   const dc=$('#dCut');if(dc)dc.onclick=()=>toggleCut(it);
+  $('#dStore').onclick=async()=>{
+    it.stored=!it.stored;try{await dbPut(it);}catch(e){saveFailed(e);it.stored=!it.stored;return;}
+    if(it.stored&&LOOK.ids?.includes(it.id)){LOOK.locks=LOOK.locks.filter(x=>x!==it.id);dailyLook();}
+    toast(it.stored?'Eingelagert – wird nicht mehr vorgeschlagen':'Wieder im Einsatz');renderDetail();refreshCurrent();};
   const df=$('#dFix');if(df)df.onclick=()=>openCutEditor({orig:it.photoOrig,cutPhoto:it.photo,rect:it.cutRect,onDone:async res=>{
     it.photo=res.dataURL;it.cutRect=res.rect;it.cutV=CUT_V;it.thumb=await thumbFor(res.dataURL);
     try{await dbPut(it);}catch(e){saveFailed(e);return;}
@@ -1818,6 +1881,9 @@ function renderDraft(){
   $('#warmOpts').querySelectorAll('.opt').forEach(b=>b.onclick=()=>{draft.warmth=+b.dataset.w;draft.warmTouched=true;renderDraft();});
   $('#occOpts').innerHTML=OCCASIONS.map(o=>`<button class="chip ${draft.occ.includes(o)?'on':''}" data-o="${o}" aria-pressed="${draft.occ.includes(o)}">${o}</button>`).join('');
   $('#occOpts').querySelectorAll('.chip').forEach(b=>b.onclick=()=>{const o=b.dataset.o;draft.occ=draft.occ.includes(o)?draft.occ.filter(x=>x!==o):[...draft.occ,o];renderDraft();});
+  const sim=!draft.id&&draft.photo&&draft.color?similarItems(draft.cat,draft.color):[];
+  $('#dupHint').innerHTML=sim.length?`<div class="dup">${sim.slice(0,3).map(i=>`<img src="${thumb(i)}" alt="" style="background:${tint(i.color?.hex,.3)}">`).join('')}
+    <span><b>Ähnliches im Schrank:</b> ${sim.length===1?esc(itemName(sim[0])):`${sim.length} Teile`}</span></div>`:'';
 }
 async function handlePhoto(file){
   if(!file)return;
@@ -1869,6 +1935,81 @@ async function saveItem(){
   if($('#page-detail').classList.contains('show'))renderDetail();
   refreshCurrent();renderNudge();
   toast(existing?'Änderungen gespeichert':`${itemName(item)} ist im Schrank`);
+}
+
+/* ======================= Kauf-Check ======================= */
+// Foto im Laden → wozu passt es in deinem Schrank, und hast du so etwas schon? Gespeichert wird nur auf Wunsch.
+function colorDist(a,b){
+  if(!a?.hex||!b?.hex)return 1;
+  const p=h=>{const n=parseInt(h.hex.slice(1),16);return[(n>>16)&255,(n>>8)&255,n&255];},x=p(a),y=p(b),rm=(x[0]+y[0])/2;
+  const dr=x[0]-y[0],dg=x[1]-y[1],db=x[2]-y[2];
+  return Math.sqrt((2+rm/256)*dr*dr+4*dg*dg+(2+(255-rm)/256)*db*db)/765;
+}
+function similarItems(cat,color,exclude=null){
+  if(!color||!CAT[cat])return[];const s=CAT[cat].slot,n=colorName(color);
+  return ITEMS.filter(i=>i.id!==exclude&&slotOf(i)===s&&(colorName(i.color)===n||colorDist(i.color,color)<.1));
+}
+const BUY_PARTNERS={top:['bottom','shoes','outer'],bottom:['top','shoes','outer'],dress:['shoes','outer','acc'],outer:['top','bottom','dress'],shoes:['top','bottom','dress'],acc:['top','bottom','dress','outer']};
+let BUY=null;
+function openBuy(){BUY={orig:null,cut:null,rect:null,unsure:false,color:null,cat:null,busy:false,thumb:null,res:{}};$('#buyInput').value='';renderBuy();openSheet('sheet-buy');}
+async function buyPhoto(file){
+  if(!file)return;const b=BUY;b.busy=true;b.res={};renderBuy();
+  try{const{dataURL,color}=await processImage(file);b.orig=dataURL;b.color=color;b.cut=null;b.unsure=false;}
+  catch(e){b.busy=false;renderBuy();toast('Dieses Foto konnte nicht geladen werden');return;}
+  renderBuy();
+  let res=null;try{res=await removeBackground(b.orig);}catch(e){console.warn('Freistellen:',e);}
+  if(res&&!res.unsure){b.cut=res.dataURL;b.rect=res.rect;b.color=res.color;}else if(res){b.cut=res.dataURL;b.rect=res.rect;b.unsure=true;}
+  b.thumb=await thumbFor(b.cut&&!b.unsure?b.cut:b.orig);b.busy=false;
+  if(BUY===b&&$('#sheet-buy').classList.contains('show'))renderBuy();
+}
+function buyAnalyse(b){
+  if(b.res[b.cat])return b.res[b.cat];
+  const tmp={id:'kauf_check',name:'Neues Teil',cat:b.cat,color:b.color,warmth:defaultWarmth(b.cat),occ:[...OCCASIONS],
+    photo:b.cut&&!b.unsure?b.cut:b.orig,thumb:b.thumb,cut:!!(b.cut&&!b.unsure)};
+  const s=slotOf(tmp),lm=laundryMode(),pool=ITEMS.filter(i=>!i.stored&&!(lm&&i.dirty));
+  const partners=pool.filter(i=>BUY_PARTNERS[s].includes(slotOf(i))&&harmony(tmp.color,i.color)>=.85);
+  const looks=new Map();ITEMS.push(tmp);
+  try{for(let k=0;k<70;k++){const ids=buildOutfit({occasion:'Alles',target:targetWarmth(),rng:mulberry32(4242+k),locks:[tmp.id],ignoreRecency:true});
+    if(ids){const key=ids.slice().sort().join('|');if(!looks.has(key))looks.set(key,ids.map(id=>ITEMS.find(i=>i.id===id)).filter(Boolean)
+      .sort((x,y)=>SLOT_ORDER.indexOf(slotOf(x))-SLOT_ORDER.indexOf(slotOf(y))));}}}
+  finally{ITEMS.splice(ITEMS.indexOf(tmp),1);}
+  const sim=similarItems(b.cat,b.color),n=looks.size,p=partners.length;
+  const v=!n||p<2?{k:'low',t:'Schwer zu kombinieren',s:'Dazu passt kaum etwas, das du schon hast. Überleg, was du dazu tragen würdest.'}
+    :sim.length>=2?{k:'mid',t:'Hast du schon',s:`Du hast bereits ${sim.length} ähnliche Teile – brauchst du noch eins?`}
+    :n>=8&&p>=4?{k:'top',t:'Starker Kauf',s:`Passt zu ${p} Teilen in deinem Schrank${sim.length?' – nur ein ähnliches Teil vorhanden':' – und so etwas hast du noch nicht'}.`}
+    :{k:'ok',t:'Passt gut',s:`Lässt sich mit ${p} Teilen aus deinem Schrank kombinieren.`};
+  return b.res[b.cat]={tmp,partners:p,looks:[...looks.values()],sim,v};
+}
+function renderBuy(){
+  const b=BUY,body=$('#buyBody'),foot=$('#buyFoot');if(!b)return;
+  if(!b.orig&&!b.busy){
+    body.innerHTML=`<p class="buy-lead">Du stehst im Laden und überlegst? Mach ein Foto vom Teil – Schnitt zeigt dir, wozu es in deinem Schrank passt und ob du so etwas schon hast.</p>
+      <label class="photo-pick" for="buyInput"><div><div class="pp-ico">${ic('i-camera','lg')}</div><div class="pp-title">Foto vom Teil machen</div>
+      <div class="small faint" style="margin-top:.25rem">Nichts wird gespeichert, solange du es nicht willst</div></div></label>`;
+    foot.innerHTML=`<button class="btn btn-secondary btn-block" data-close>Schließen</button>`;return;
+  }
+  const img=b.cut&&!b.unsure?b.cut:b.orig;
+  let html=`<label class="photo-pick has ${b.busy?'cutting':''}" for="buyInput">${img?`<img src="${img}" alt="Foto des Teils">`:''}<span class="pp-change">${ic('i-camera','sm')}Anderes Foto</span></label>
+    <div class="field"><span class="field-label">Was ist es?</span><div class="opt-grid" id="buyCats">${CATS.map(c=>`<button class="opt ${b.cat===c.id?'on':''}" data-cat="${c.id}" aria-pressed="${b.cat===c.id}">${ic(c.icon,'lg')}<span>${c.label}</span></button>`).join('')}</div></div>`;
+  if(b.cat&&!b.busy&&b.color){
+    const r=buyAnalyse(b),v=r.v;
+    html+=`<div class="buy-verdict ${v.k}"><span class="kicker">Ergebnis</span><h3>${v.t}</h3><p>${v.s}</p></div>
+      <div class="kpis"><div class="stat"><b>${r.looks.length}${r.looks.length>=40?'+':''}</b><span>Looks möglich</span></div>
+        <div class="stat"><b>${r.partners}</b><span>passende Teile</span></div><div class="stat"><b>${r.sim.length}</b><span>ähnliche</span></div></div>
+      ${r.looks.length?`<p class="section-label">So könntest du es tragen</p><div class="buy-looks">${r.looks.slice(0,4).map(l=>`<div class="buy-look">${layMini(l)}</div>`).join('')}</div>`:''}
+      ${r.sim.length?`<p class="section-label">Ähnliches in deinem Schrank</p><div class="buy-sim">${r.sim.slice(0,6).map(i=>`<div class="buy-simi"><span style="background:${tint(i.color?.hex,.3)}"><img src="${thumb(i)}" alt=""></span><small>${esc(itemName(i))}</small></div>`).join('')}</div>`:''}`;
+  }else if(!b.busy&&!b.cat)html+=`<p class="buy-lead faint">Wähle die Art des Teils – dann siehst du das Ergebnis.</p>`;
+  body.innerHTML=html;
+  body.querySelectorAll('#buyCats .opt').forEach(x=>x.onclick=()=>{b.cat=x.dataset.cat;renderBuy();
+    requestAnimationFrame(()=>$('.buy-verdict')?.scrollIntoView({behavior:calmMotion()?'auto':'smooth',block:'start'}));});
+  foot.innerHTML=`<button class="btn btn-secondary" data-close>Schließen</button><button class="btn btn-primary" id="buyAdd" ${b.busy||!b.cat?'disabled':''}>Gekauft – in den Schrank</button>`;
+  const a=$('#buyAdd');if(a)a.onclick=buyToCloset;
+}
+function buyToCloset(){
+  const b=BUY;if(!b||!b.orig||!b.cat)return;
+  closeOverlay('sheet-buy');openAdd();
+  Object.assign(draft,{orig:b.orig,cutPhoto:b.cut,cutRect:b.rect,useCut:!!(b.cut&&!b.unsure),cat:b.cat,color:b.color,colorAuto:true,warmth:defaultWarmth(b.cat)});
+  renderDraft();
 }
 
 /* ======================= Looks: Gemerkt & Kalender ======================= */
@@ -2085,6 +2226,7 @@ function renderMe(){
     <p class="section-label">Entdecken</p>
     <div class="list">
       <button class="list-row" data-page="stats"><span class="ico-tile">${ic('i-chart')}</span><span class="lr-main"><span class="lr-title">Statistik</span><span class="lr-sub">Was du oft trägst – und was nie</span></span>${ic('i-chev-r','chev')}</button>
+      <button class="list-row" data-page="buy"><span class="ico-tile">${ic('i-scan')}</span><span class="lr-main"><span class="lr-title">Kauf-Check</span><span class="lr-sub">Lohnt sich das neue Teil? Foto machen und prüfen</span></span>${ic('i-chev-r','chev')}</button>
       <button class="list-row" data-page="pack"><span class="ico-tile">${ic('i-suitcase')}</span><span class="lr-main"><span class="lr-title">Packliste</span><span class="lr-sub">Outfits für deine nächste Reise</span></span>${ic('i-chev-r','chev')}</button></div>
     <p class="section-label">App</p>
     <div class="list">
@@ -2095,6 +2237,7 @@ function renderMe(){
   $$('#meSlot [data-page]').forEach(b=>b.onclick=()=>openSubpage(b.dataset.page));
 }
 function openSubpage(name){
+  if(name==='buy'){openBuy();return;}
   if(name==='stats')renderStats();
   if(name==='pack')renderPack();
   if(name==='settings')renderSettings();
@@ -3429,6 +3572,7 @@ async function init(){
   $$('.tab[data-tab]').forEach(b=>b.onclick=()=>go(b.dataset.tab));
   $('#tabAdd').onclick=()=>openAdd();
   ceInit();
+  $('#buyInput').onchange=e=>buyPhoto(e.target.files[0]);
   $('#photoInput').onchange=e=>handlePhoto(e.target.files[0]);
   $('#saveItem').onclick=saveItem;
   $('#filterReset').onclick=resetFilters;
