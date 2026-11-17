@@ -1026,7 +1026,7 @@ html[data-text="xl"] .lay-kicker{letter-spacing:.06em;font-size:.6rem}
 
 <script>
 'use strict';
-const APP_VERSION='3.1';
+const APP_VERSION='3.2';
 
 /* ======================= Konstanten ======================= */
 const CATS=[
@@ -3099,6 +3099,29 @@ async function cutAll(){
 }
 /* ======================= Freistellung nachbessern ======================= */
 // Pinsel: Stellen entfernen oder zurückholen. Blasse Bereiche fallen weg; beim Abschluss wird die Kante wieder am Foto ausgerichtet.
+// Automatisch: Freistellungen mit älterer Logik leise im Hintergrund neu berechnen (aus dem Original).
+// Unsichere Ergebnisse ersetzen nichts. Wird die App vorher geschlossen, geht es beim nächsten Start weiter.
+let autoRecutRunning=false;
+async function autoRecut(){
+  if(autoRecutRunning||LS.str('auto-cut')==='off')return;
+  const todo=()=>ITEMS.filter(i=>i.cut&&i.photoOrig&&(i.cutV||1)<CUT_V);
+  if(!todo().length)return;
+  autoRecutRunning=true;let ok=0,n=0;
+  try{
+    try{await cutReady();}catch(e){return;}
+    for(const it of todo()){
+      // nicht gleichzeitig mit eigenem Freistellen oder dem Pinsel rechnen
+      while((draft&&draft.cutBusy)||CE)await new Promise(r=>setTimeout(r,800));
+      if(!ITEMS.includes(it)||!it.cut||!it.photoOrig)continue;
+      let res=null;try{res=await removeBackground(it.photoOrig);}catch(e){console.warn('Freistellen:',e);}
+      if(res&&!res.unsure){applyCut(it,res);it.thumb=await thumbFor(res.dataURL);ok++;}else it.cutV=CUT_V;
+      try{await dbPut(it);}catch(e){console.warn(e);break;}
+      if(++n%4===0&&!overlays.length)refreshCurrent();
+      await new Promise(r=>setTimeout(r,120));
+    }
+  }finally{autoRecutRunning=false;}
+  if(ok){if(!overlays.length)refreshCurrent();toast(`${ok} ${ok===1?'Foto':'Fotos'} automatisch sauberer freigestellt`,3600);}
+}
 let CE=null;
 function ceBusy(t){const b=$('#ceBusy');b.hidden=!t;b.textContent=t||'';}
 function ceHint(){$('#ceHint').textContent=CE.mode==='erase'?'Male über alles, was weg soll. Blasse Bereiche werden entfernt.':'Male über blasse Stellen, die zum Kleidungsstück gehören.';}
@@ -3394,7 +3417,7 @@ async function initialSync(){
     await pushChanges();
     setCursor('items',ir);setCursor('wears',wr);
     try{localStorage.setItem('cloud-last',String(Date.now()));}catch(e){}
-    setCloudStatus('ok');afterPull();
+    setCloudStatus('ok');afterPull();setTimeout(autoRecut,3000);
     return{down:ir.filter(r=>!r.deleted).length,up:q.items.length};
   }catch(e){setCloudStatus('error');throw e;}
   finally{syncing=false;}
@@ -3573,6 +3596,7 @@ async function init(){
   $('#tabAdd').onclick=()=>openAdd();
   ceInit();
   $('#buyInput').onchange=e=>buyPhoto(e.target.files[0]);
+  setTimeout(autoRecut,5000);
   $('#photoInput').onchange=e=>handlePhoto(e.target.files[0]);
   $('#saveItem').onclick=saveItem;
   $('#filterReset').onclick=resetFilters;
