@@ -1,4 +1,4 @@
-const CACHE = 'schnitt-v7';
+const CACHE = 'schnitt-v8';
 const FONT_CACHE = 'schnitt-ext-v1';
 const ASSETS = ['./outfit.html', './schnitt-manifest.webmanifest', './apple-touch-icon.png', './icon-192.png', './icon-512.png', './icon-512-maskable.png', './favicon-32.png'];
 

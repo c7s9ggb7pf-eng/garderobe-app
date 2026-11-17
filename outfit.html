@@ -738,6 +738,22 @@ html[data-text="xl"] .lay-kicker{letter-spacing:.06em;font-size:.6rem}
 .buy-simi span{display:block;aspect-ratio:1/1.1;border-radius:var(--r-md);overflow:hidden}
 .buy-simi img{width:100%;height:100%;object-fit:contain;padding:.35rem}
 .buy-simi small{display:block;margin-top:.35rem;font-size:.75rem;color:var(--ink-2);line-height:1.25}
+/* ---- 3.3: Alle Fotos verbessern ---- */
+.fix-bar{display:flex;align-items:center;gap:.65rem;margin:0 0 .9rem;padding:.6rem .5rem .6rem .6rem;border-radius:var(--r-md);
+  background:var(--surface);box-shadow:inset 0 0 0 1px var(--line),var(--shadow-1);animation:fbIn .45s var(--ease) both}
+.fb-ico{flex:none;display:grid;place-items:center;width:2.5rem;height:2.5rem;border-radius:50%;background:var(--accent-soft);color:var(--accent-ink)}
+.fb-ico .i{width:1.15rem;height:1.15rem}
+.fb-main{flex:1;min-width:0;display:flex;flex-direction:column;gap:.1rem;line-height:1.3}
+.fb-main b{font-weight:600;font-size:.95rem;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.fb-link{align-self:flex-start;display:inline-flex;align-items:center;gap:.3rem;margin-top:.3rem;padding:.2rem 0;font:inherit;font-size:.84rem;font-weight:600;color:var(--accent-ink);background:none;border:0}
+.fb-link .i{width:.95rem;height:.95rem}
+.fb-main span{font-size:.82rem;color:var(--ink-3)}
+.fb-prog{height:4px;border-radius:4px;background:var(--surface-3);margin-top:.45rem;overflow:hidden}
+.fb-prog i{display:block;height:100%;border-radius:inherit;background:var(--accent);transition:width .5s var(--ease)}
+.fix-bar .btn{flex:none;white-space:nowrap}
+.fix-bar .fb-x{flex:none;width:2rem;height:2rem;color:var(--ink-3)}
+@keyframes fbIn{from{opacity:0;transform:translateY(-6px)}}
+:root[data-motion="calm"] .fix-bar{animation:none}
 /*@CSS-MORE*/
 </style>
 </head>
@@ -1026,7 +1042,7 @@ html[data-text="xl"] .lay-kicker{letter-spacing:.06em;font-size:.6rem}
 
 <script>
 'use strict';
-const APP_VERSION='3.2';
+const APP_VERSION='3.3';
 
 /* ======================= Konstanten ======================= */
 const CATS=[
@@ -1692,6 +1708,7 @@ function renderCloset(){
         <button class="icon-btn filter-btn" id="filterBtn" aria-label="Filtern und sortieren">${ic('i-filter')}</button>
       </div>
       <div class="chip-scroll" id="catBar"></div>
+      <div id="fixBar"></div>
       <p class="result-line" id="resultLine"></p>
       <div class="grid" id="closetGrid"></div>`;
     el.dataset.built='1';
@@ -1704,7 +1721,7 @@ function renderCloset(){
   $('#catBar').innerHTML=`<button class="chip ${CF.cat==='alle'?'on':''}" data-cat="alle">Alle</button>`+
     CATS.filter(c=>used.has(c.id)).map(c=>`<button class="chip ${CF.cat===c.id?'on':''}" data-cat="${c.id}">${c.plural}</button>`).join('');
   $('#catBar').querySelectorAll('.chip').forEach(b=>b.onclick=()=>{CF.cat=b.dataset.cat;renderCloset();});
-  renderClosetGrid();
+  renderClosetGrid();improveUI();
 }
 function renderClosetGrid(){
   const grid=$('#closetGrid');if(!grid)return;
@@ -1802,7 +1819,7 @@ function renderDetail(){
     if(it.stored&&LOOK.ids?.includes(it.id)){LOOK.locks=LOOK.locks.filter(x=>x!==it.id);dailyLook();}
     toast(it.stored?'Eingelagert – wird nicht mehr vorgeschlagen':'Wieder im Einsatz');renderDetail();refreshCurrent();};
   const df=$('#dFix');if(df)df.onclick=()=>openCutEditor({orig:it.photoOrig,cutPhoto:it.photo,rect:it.cutRect,onDone:async res=>{
-    it.photo=res.dataURL;it.cutRect=res.rect;it.cutV=CUT_V;it.thumb=await thumbFor(res.dataURL);
+    it.photo=res.dataURL;it.cutRect=res.rect;it.cutV=CUT_V;it.cutHand=true;it.thumb=await thumbFor(res.dataURL);
     try{await dbPut(it);}catch(e){saveFailed(e);return;}
     renderDetail();refreshCurrent();toast('Freistellung gespeichert');}});
   $('#dEdit').onclick=()=>openAdd(it.id);
@@ -1859,7 +1876,7 @@ function renderDraft(){
   cc.querySelectorAll('[data-cut]').forEach(b=>b.onclick=()=>{draft.useCut=b.dataset.cut==='1';renderDraft();});
   const cr=$('#cutRun');if(cr)cr.onclick=runDraftCut;
   const cf=$('#cutFix');if(cf)cf.onclick=()=>{const dr=draft;openCutEditor({orig:dr.orig,cutPhoto:dr.cutPhoto,rect:dr.cutRect,onDone:res=>{
-    dr.cutPhoto=res.dataURL;dr.cutRect=res.rect;dr.useCut=true;if(dr.colorAuto)dr.color=res.color;
+    dr.cutPhoto=res.dataURL;dr.cutRect=res.rect;dr.useCut=true;dr.cutHand=true;dr.cutQ=0;if(dr.colorAuto)dr.color=res.color;
     if(draft===dr&&$('#sheet-add').classList.contains('show'))renderDraft();}});};
   pp.classList.toggle('has',!!draft.photo);
   pp.innerHTML=draft.photo
@@ -1890,7 +1907,7 @@ async function handlePhoto(file){
   const pp=$('#photoPick');pp.classList.add('busy');
   try{
     const{dataURL,color}=await processImage(file);
-    draft.orig=dataURL;draft.cutPhoto=null;draft.cutRect=null;draft.useCut=false;
+    draft.orig=dataURL;draft.cutPhoto=null;draft.cutRect=null;draft.useCut=false;draft.cutHand=false;draft.cutQ=0;
     if(draft.colorAuto)draft.color=color;
   }catch(e){toast('Dieses Foto konnte nicht geladen werden');}
   pp.classList.remove('busy');renderDraft();
@@ -1902,7 +1919,7 @@ async function runDraftCut(){
   let res=null;try{res=await removeBackground(d.orig);}catch(e){console.warn('Freistellen:',e);toast('Freistellen gerade nicht möglich – bist du online?');}
   d.cutBusy=false;
   if(res){
-    d.cutPhoto=res.dataURL;d.cutRect=res.rect;d.useCut=!res.unsure;
+    d.cutPhoto=res.dataURL;d.cutRect=res.rect;d.useCut=!res.unsure;d.cutHand=false;d.cutQ=0;
     if(d.colorAuto&&!res.unsure)d.color=res.color;
     if(res.unsure)toast('Freistellen ist bei diesem Foto unsicher – Original bleibt, du kannst umschalten',3600);
   }
@@ -1926,6 +1943,8 @@ async function saveItem(){
   delete item.skin;delete item.flash;delete item.cutTried;
   for(const k of ['orig','cutPhoto','useCut','cutBusy','colorAuto','warmTouched'])delete item[k];
   if(!item.cut||!item.photoOrig){delete item.photoOrig;delete item.cutRect;delete item.cutV;}
+  if(!item.cut||!draft.cutHand)delete item.cutHand;else item.cutHand=true;
+  if(!item.cut||!draft.cutQ)delete item.cutQ;
   else if(draft.cutRect){item.cutRect=draft.cutRect;item.cutV=CUT_V;}
   try{await dbPut(item);}catch(e){saveFailed(e);btn.disabled=false;return;}
   btn.disabled=false;
@@ -2387,7 +2406,10 @@ function renderSettings(){
     <div class="list"><div class="list-row"><span class="ico-tile">${ic('i-scissors')}</span><span class="lr-main"><span class="lr-title">Hintergrund automatisch entfernen</span>
       <span class="lr-sub">Bei neuen Fotos – per KI direkt auf dem Gerät</span></span>${tog('setAutoCut',LS.str('auto-cut')!=='off','Hintergrund automatisch entfernen')}</div>
       ${(()=>{const t=cutTodo(),n=t.length,redo=t.filter(i=>i.cut).length;return n?`<button class="list-row" id="setCutAll"><span class="ico-tile">${ic('i-image')}</span><span class="lr-main"><span class="lr-title">${redo===n?'Freistellungen verbessern':'Vorhandene Fotos freistellen'}</span>
-      <span class="lr-sub">${redo===n?`${n} ${n===1?'Foto':'Fotos'} mit der neuen, saubereren Logik neu freistellen`:`${n} ${n===1?'Foto':'Fotos'}${redo?` (${redo} zum Verbessern)`:' mit Hintergrund'}`} · Originale bleiben erhalten</span></span>${ic('i-chev-r','chev')}</button>`:'';})()}</div>
+      <span class="lr-sub">${redo===n?`${n} ${n===1?'Foto':'Fotos'} mit der neuen, saubereren Logik neu freistellen`:`${n} ${n===1?'Foto':'Fotos'}${redo?` (${redo} zum Verbessern)`:' mit Hintergrund'}`} · Originale bleiben erhalten</span></span>${ic('i-chev-r','chev')}</button>`:'';})()}
+      ${(()=>{const all=ITEMS.filter(i=>i.cut&&i.photoOrig).length,n=improveTodo().length;if(!all)return'';
+        return`<button class="list-row" id="setImprove"${IMP?' disabled':''}><span class="ico-tile">${ic('i-scissors')}</span><span class="lr-main"><span class="lr-title">Alle Fotos verbessern</span>
+      <span class="lr-sub">${IMP?`Läuft gerade – ${IMP.i} von ${IMP.n}`:n?`${n} ${n===1?'Freistellung':'Freistellungen'} gründlich prüfen · das jeweils sauberere Bild bleibt`:'Alle Fotos sind gründlich geprüft'}</span></span>${n&&!IMP?ic('i-chev-r','chev'):''}</button>`;})()}</div>
     <p class="section-label">Kleidung</p>
     <div class="list"><div class="list-row"><span class="ico-tile">${ic('i-wash')}</span><span class="lr-main"><span class="lr-title">Wäsche-Modus</span>
       <span class="lr-sub">Getragene Teile kommen in die Wäsche und werden erst wieder vorgeschlagen, wenn sie sauber sind.</span></span>${tog('setLaundry',lm,'Wäsche-Modus')}</div></div>
@@ -2418,6 +2440,7 @@ function renderSettings(){
   const cd=$('#cloudDelBtn');if(cd)cd.onclick=cloudDeleteAccount;
   $('#setAutoCut').onchange=e=>{e.target.checked?LS.del('auto-cut'):LS.setStr('auto-cut','off');};
   const ca=$('#setCutAll');if(ca)ca.onclick=cutAll;
+  const im=$('#setImprove');if(im)im.onclick=()=>{if(!improveTodo().length){toast('Alle Fotos sind schon gründlich geprüft');return;}while(overlays.length)closeTop();go('schrank');improveAll();};
   $('#setEvents').onclick=()=>openEvents();
   $('#setImport').onclick=()=>$('#importInput').click();
   $('#setWipe').onclick=wipeAll;
@@ -2782,12 +2805,14 @@ function cutScale(src,sx,sy,sw,sh,dw,dh){
   return out;
 }
 // Modell auf ein Rechteck des Fotos anwenden → Wahrscheinlichkeiten S×S (0..1)
-async function cutInfer(sess,img,r){
+async function cutInfer(sess,img,r,flip=false){
   const S=CUT_S,n=S*S,d=cutScale(img,r.x,r.y,r.w,r.h,S,S).getContext('2d').getImageData(0,0,S,S).data;
   const f=new Float32Array(3*n),mean=[.485,.456,.406],sd=[.229,.224,.225];
-  for(let i=0;i<n;i++)for(let ch=0;ch<3;ch++)f[ch*n+i]=(d[i*4+ch]/255-mean[ch])/sd[ch];
+  // flip: Bild gespiegelt rechnen und das Ergebnis zurückspiegeln (zweite Meinung des Modells)
+  const src=flip?i=>{const x=i%S;return i-x+(S-1-x);}:i=>i;
+  for(let i=0;i<n;i++){const k=src(i)*4;for(let ch=0;ch<3;ch++)f[ch*n+i]=(d[k+ch]/255-mean[ch])/sd[ch];}
   const out=await sess.run({[sess.inputNames[0]]:new ort.Tensor('float32',f,[1,3,S,S])});
-  const o=Float32Array.from(out[sess.outputNames[0]].data.subarray(0,n));
+  const raw=out[sess.outputNames[0]].data,o=new Float32Array(n);for(let i=0;i<n;i++)o[i]=raw[src(i)];
   let mn=Infinity,mx=-Infinity;for(let i=0;i<n;i++){if(o[i]<mn)mn=o[i];if(o[i]>mx)mx=o[i];}
   if(mx-mn>.5){const k=1/(mx-mn);for(let i=0;i<n;i++)o[i]=(o[i]-mn)*k;}
   else for(let i=0;i<n;i++)o[i]=o[i]<0?0:o[i]>1?1:o[i];
@@ -2900,16 +2925,18 @@ async function cutPrepare(src){
   return{img,W,H,work,d:work.getContext('2d').getImageData(0,0,W,H).data};
 }
 // Modell in zwei Durchgängen → Wahrscheinlichkeiten W×H. Setzt c.P und c.unsure; false = kein Motiv gefunden.
-async function cutPredict(c){
+async function cutPredict(c,thorough=false){
   const sess=await cutReady(),S=CUT_S,{img,W,H}=c,N=W*H;
-  const p1=await cutInfer(sess,img,{x:0,y:0,w:img.width,h:img.height}),s1=cutClean(p1,S,S);
+  const infer=async r=>{const a=await cutInfer(sess,img,r);if(!thorough)return a;
+    const b=await cutInfer(sess,img,r,true);for(let i=0;i<a.length;i++)a[i]=(a[i]+b[i])/2;return a;};
+  const p1=await infer({x:0,y:0,w:img.width,h:img.height}),s1=cutClean(p1,S,S);
   if(!s1)return false;
   const cover=s1.area/(S*S),bw=(s1.x1-s1.x0+1)/S,bh=(s1.y1-s1.y0+1)/S;
   if(cover<.03||cover>.94||bw*bh<.05)return false;   // offensichtlich danebengegangen
   const P=cutUp(p1,S,{x:0,y:0,w:W,h:H},W,H);let iou=1;
   if(bw<.8||bh<.8){
     const m=.14*Math.max(bw,bh),rx=Math.max(0,s1.x0/S-m),ry=Math.max(0,s1.y0/S-m),rx1=Math.min(1,(s1.x1+1)/S+m),ry1=Math.min(1,(s1.y1+1)/S+m);
-    const p2=await cutInfer(sess,img,{x:rx*img.width,y:ry*img.height,w:(rx1-rx)*img.width,h:(ry1-ry)*img.height});
+    const p2=await infer({x:rx*img.width,y:ry*img.height,w:(rx1-rx)*img.width,h:(ry1-ry)*img.height});
     const dst={x:rx*W,y:ry*H,w:(rx1-rx)*W,h:(ry1-ry)*H},P2=cutUp(p2,S,dst,W,H);
     // Stimmen beide Durchgänge überein? Sonst hat der Ausschnitt das Modell verwirrt.
     let inter=0,uni=0;for(let i=0;i<N;i++){const a=P[i]>.5,b=P2[i]>.5;if(a&&b)inter++;if(a||b)uni++;}
@@ -3062,7 +3089,7 @@ function cutColor(c,alpha){
 const CUT_V=2;
 function applyCut(it,res){
   if(!it.cut)it.photoOrig=it.photo;
-  it.photo=res.dataURL;it.cut=true;it.cutRect=res.rect;it.cutV=CUT_V;delete it.cutTried;
+  it.photo=res.dataURL;it.cut=true;it.cutRect=res.rect;it.cutV=CUT_V;delete it.cutTried;delete it.cutHand;delete it.cutQ;
 }
 async function toggleCut(it){
   if(it.cut&&it.photoOrig){
@@ -3121,6 +3148,111 @@ async function autoRecut(){
     }
   }finally{autoRecutRunning=false;}
   if(ok){if(!overlays.length)refreshCurrent();toast(`${ok} ${ok===1?'Foto':'Fotos'} automatisch sauberer freigestellt`,3600);}
+}
+/* ======================= Alle Fotos verbessern (ein Klick) ======================= */
+// Gründlich = Modell zusätzlich gespiegelt. Alt und neu werden verglichen: Eine gute Kante liegt dort, wo sich das Foto
+// sichtbar ändert. Reste vom Hintergrund oder abgeschnittene Stellen haben Kanten auf ruhigen Flächen → niedrigere Note.
+const CUT_Q=1;
+let IMP=null,IMP_DONE=null;
+const sleep=ms=>new Promise(r=>setTimeout(r,ms));
+function cutScore(c,alpha){
+  const{W,H,d}=c;let s=0,n=0;
+  for(let y=2;y<H-2;y++)for(let x=2;x<W-2;x++){
+    const i=y*W+x,a=alpha[i]>=.5;
+    if(a===(alpha[i+1]>=.5)&&a===(alpha[i+W]>=.5))continue;
+    let g=0;
+    for(let ch=0;ch<3;ch++){
+      const gx=d[(i+2)*4+ch]-d[(i-2)*4+ch],gy=d[(i+2*W)*4+ch]-d[(i-2*W)*4+ch],v=gx*gx+gy*gy;if(v>g)g=v;
+    }
+    s+=Math.min(1,Math.sqrt(g)/90);n++;
+  }
+  return n?s/n:0;
+}
+// Bisherige Freistellung als Deckkraft im Arbeitsraster (oder null, wenn sie nicht passt)
+async function cutAlphaOf(c,photo,rect){
+  const{W,H}=c;if(!photo||!rect||rect[4]!==W||rect[5]!==H)return null;
+  const im=await loadImg(photo),t=cutCanvas(W,H),x=t.getContext('2d',{willReadFrequently:true});
+  x.drawImage(im,rect[0],rect[1],rect[2],rect[3]);
+  const px=x.getImageData(0,0,W,H).data,a=new Float32Array(W*H);for(let i=0;i<a.length;i++)a[i]=px[i*4+3]/255;
+  return a;
+}
+// → {dataURL,rect} wenn das neue Bild sauberer ist, sonst 'same'
+async function improveOne(it){
+  const c=await cutPrepare(it.photoOrig);
+  if(!await cutPredict(c,true))return'same';
+  const alpha=cutRefine(c,c.P);if(!alpha)return'same';
+  const old=await cutAlphaOf(c,it.photo,it.cutRect),ns=cutScore(c,alpha);
+  if(old){
+    let inter=0,uni=0;for(let i=0;i<alpha.length;i++){const a=alpha[i]>=.5,b=old[i]>=.5;if(a&&b)inter++;if(a||b)uni++;}
+    if(!uni||inter/uni>.993)return'same';           // praktisch gleich
+    const os=cutScore(c,old);it._score=[os,ns];
+    if(c.unsure||ns<os*1.03)return'same';           // das bisherige ist mindestens so gut
+  }else if(c.unsure)return'same';
+  const res=cutCompose(c,alpha);if(!res)return'same';
+  return{dataURL:res.canvas.toDataURL('image/png'),rect:res.rect};
+}
+function improveTodo(){return ITEMS.filter(i=>i.cut&&i.photoOrig&&!i.cutHand&&(i.cutQ||0)<CUT_Q);}
+async function improveAll(){
+  if(IMP)return;
+  const todo=improveTodo();
+  if(!todo.length){toast('Alle Fotos sind schon geprüft');return;}
+  IMP={i:0,n:todo.length,ok:0,undo:[],stop:false};IMP_DONE=null;improveUI();
+  try{await cutReady();}catch(e){IMP=null;improveUI();toast('KI konnte nicht geladen werden – bist du online?');return;}
+  while(autoRecutRunning)await sleep(800);
+  for(const it of todo){
+    if(IMP.stop)break;
+    // nicht gleichzeitig mit eigenem Freistellen oder dem Pinsel rechnen
+    while((draft&&draft.cutBusy)||CE)await sleep(800);
+    IMP.i++;improveUI();
+    if(!ITEMS.includes(it)||!it.cut||!it.photoOrig||it.cutHand)continue;
+    let r=null;try{r=await improveOne(it);}catch(e){console.warn('Verbessern:',e);continue;}
+    if(r&&r!=='same'){
+      IMP.undo.push({it,photo:it.photo,thumb:it.thumb,rect:it.cutRect});
+      it.photo=r.dataURL;it.cutRect=r.rect;it.cutV=CUT_V;it.thumb=await thumbFor(r.dataURL);IMP.ok++;
+    }
+    it.cutQ=CUT_Q;
+    try{await dbPut(it);}catch(e){saveFailed(e);break;}
+    if(r&&r!=='same'&&!overlays.length&&currentTab==='schrank')renderClosetGrid();
+    await sleep(60);
+  }
+  const{ok,undo,i}=IMP;IMP=null;
+  IMP_DONE={ok,same:i-ok,undo};
+  if(!overlays.length)refreshCurrent();improveUI();
+  if($('#page-settings').classList.contains('show'))renderSettings();
+  toast(ok?`${ok} ${ok===1?'Foto':'Fotos'} sauberer freigestellt`:'Alles geprüft – deine Fotos sind schon sauber',3600);
+}
+async function improveUndo(){
+  const u=IMP_DONE&&IMP_DONE.undo;if(!u||!u.length)return;
+  for(const s of u){const it=s.it;if(!ITEMS.includes(it))continue;
+    it.photo=s.photo;it.thumb=s.thumb;it.cutRect=s.rect;try{await dbPut(it);}catch(e){saveFailed(e);break;}}
+  IMP_DONE=null;refreshCurrent();improveUI();toast('Alle Fotos wie vorher');
+}
+// Leiste im Schrank: Angebot → Fortschritt → Ergebnis mit „Rückgängig"
+function improveUI(){
+  const el=$('#fixBar');if(!el)return;
+  const n=IMP?0:improveTodo().length;
+  let h='';
+  if(IMP){
+    const p=Math.round(100*Math.max(0,IMP.i-1)/IMP.n);
+    h=`<div class="fix-bar run"><span class="fb-ico">${ic('i-scissors')}</span><div class="fb-main"><b>Verbessere Fotos …</b>
+      <span>${IMP.i} von ${IMP.n} · App offen lassen</span><div class="fb-prog"><i style="width:${p}%"></i></div></div>
+      <button class="btn btn-ghost btn-sm" id="fixStop">${IMP.stop?'Hält an …':'Anhalten'}</button></div>`;
+  }else if(IMP_DONE){
+    const{ok,same}=IMP_DONE;
+    h=`<div class="fix-bar done"><span class="fb-ico">${ic('i-check')}</span><div class="fb-main"><b>${ok?`${ok} ${ok===1?'Foto':'Fotos'} sauberer`:'Alles schon sauber'}</b>
+      <span>${same?`${same} ${same===1?'war':'waren'} schon sauber`:'Alle geprüft'}</span>
+      ${ok?`<button class="fb-link" id="fixUndo">${ic('i-undo','sm')}Rückgängig machen</button>`:''}</div>
+      <button class="icon-btn fb-x" id="fixClose" aria-label="Ausblenden">${ic('i-x','sm')}</button></div>`;
+  }else if(n){
+    h=`<div class="fix-bar"><span class="fb-ico">${ic('i-scissors')}</span><div class="fb-main"><b>Fotos verbessern</b>
+      <span>${n} ${n===1?'Foto':'Fotos'} gründlich prüfen</span></div>
+      <button class="btn btn-primary btn-sm" id="fixGo">Verbessern</button></div>`;
+  }
+  el.innerHTML=h;
+  const g=$('#fixGo');if(g)g.onclick=improveAll;
+  const s=$('#fixStop');if(s)s.onclick=()=>{if(IMP){IMP.stop=true;improveUI();}};
+  const u=$('#fixUndo');if(u)u.onclick=improveUndo;
+  const c=$('#fixClose');if(c)c.onclick=()=>{IMP_DONE=null;improveUI();};
 }
 let CE=null;
 function ceBusy(t){const b=$('#ceBusy');b.hidden=!t;b.textContent=t||'';}
